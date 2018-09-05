@@ -13,8 +13,8 @@ jobs:
           environment:
             DOCKERIZE_VERSION: v0.3.0
       - run: 
-        name: Wait for Redis
-        command: dockerize -wait tcp://localhost:6379 -timeout 1m
+            name: Wait for Redis
+            command: dockerize -wait tcp://localhost:6379 -timeout 1m
       - run: go test -race
 
 

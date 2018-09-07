@@ -3,9 +3,8 @@ package redis_queue
 import "github.com/gomodule/redigo/redis"
 
 type Queue struct {
-	uri  string
-	key  string
-	conn redis.Conn
+	Key  string
+	Conn redis.Conn
 }
 
 // New Queue generates a new Redis list with Queue methods.
@@ -15,17 +14,32 @@ func NewQueue(uri, key string) (*Queue, error) {
 		return nil, err
 	}
 
-	q := &Queue{uri: uri, key: key, conn: conn}
+	q := &Queue{Key: key, Conn: conn}
 
 	return q, nil
 }
 
-func (q Queue) Enqueue() {
+// Enqueue queues shit duh
+func (q *Queue) Enqueue(item string) error {
 
+	_, err := q.Conn.Do("LPUSH", q.Key, item)
+
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
-func (q Queue) Dequeue() {
+// Dequeue queues shit duh
+func (q *Queue) Dequeue() (string, error) {
 
+	item, err := redis.String(q.Conn.Do("RPOP", q.Key))
+
+	if err != nil {
+		return item, err
+	}
+
+	return item, nil
 }
 
 func redisConnection(uri string) (redis.Conn, error) {

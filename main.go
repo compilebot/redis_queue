@@ -19,7 +19,7 @@ func NewQueue(uri, key string) (*Queue, error) {
 	return q, nil
 }
 
-// Enqueue queues shit duh
+// Enqueue adds a string to the start of the queue
 func (q *Queue) Enqueue(item string) error {
 
 	_, err := q.Conn.Do("LPUSH", q.Key, item)
@@ -30,7 +30,7 @@ func (q *Queue) Enqueue(item string) error {
 	return nil
 }
 
-// Dequeue queues shit duh
+// Dequeue removes the earliest item added to the queue
 func (q *Queue) Dequeue() (string, error) {
 
 	item, err := redis.String(q.Conn.Do("RPOP", q.Key))
@@ -40,6 +40,19 @@ func (q *Queue) Dequeue() (string, error) {
 	}
 
 	return item, nil
+}
+
+func (q *Queue) PollQueue() (bool, error) {
+	length, err := redis.Int(q.Conn.Do("LLEN", q.Key))
+	if err != nil {
+		return false, err
+	}
+
+	return length > 0, nil
+}
+
+func (q *Queue) Close() {
+	q.Conn.Close()
 }
 
 func redisConnection(uri string) (redis.Conn, error) {

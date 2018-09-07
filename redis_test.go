@@ -8,6 +8,7 @@ import (
 
 func TestNewQueue(t *testing.T) {
 	queue, err := NewQueue("localhost:6379", "_test_queue")
+	defer queue.Close()
 
 	if err != nil {
 		t.Error(err.Error())
@@ -31,6 +32,7 @@ func TestNewQueue(t *testing.T) {
 
 func TestEnqueue(t *testing.T) {
 	q, err := NewQueue("localhost:6379", "_push_test_queue")
+	defer q.Close()
 	q.Conn.Do("DEL", q.Key)
 
 	if err != nil {
@@ -60,6 +62,7 @@ func TestEnqueue(t *testing.T) {
 
 func TestDequeue(t *testing.T) {
 	q, err := NewQueue("localhost:6379", "_pop_test_queue")
+	defer q.Close()
 	q.Conn.Do("DEL", q.Key)
 
 	if err != nil {
@@ -87,8 +90,42 @@ func TestDequeue(t *testing.T) {
 
 }
 
+func TestPollQueue(t *testing.T) {
+	q, err := NewQueue("localhost:6379", "_poll_test_queue")
+	defer q.Close()
+
+	if err != nil {
+		t.Error(err.Error())
+	}
+
+	q.Conn.Do("DEL", q.Key)
+
+	hasItem, err := q.PollQueue()
+	if err != nil {
+		t.Error(err.Error())
+	}
+
+	if hasItem {
+		t.Error("Queue should be empty")
+	}
+
+	q.Enqueue("test_item_1")
+
+	hasItem, err = q.PollQueue()
+	if err != nil {
+		t.Error(err.Error())
+	}
+
+	if !hasItem {
+		t.Error("Queue should not be empty")
+	}
+
+}
+
 func TestRedisConnection(t *testing.T) {
-	_, err := redisConnection("localhost:6379")
+	conn, err := redisConnection("localhost:6379")
+	defer conn.Close()
+	defer conn.Do("FLUSHALL")
 
 	if err != nil {
 		t.Errorf(err.Error())

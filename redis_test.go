@@ -90,7 +90,7 @@ func TestDequeue(t *testing.T) {
 
 }
 
-func TestPollQueue(t *testing.T) {
+func TestPeek(t *testing.T) {
 	q, err := NewQueue("localhost:6379", "_poll_test_queue")
 	defer q.Close()
 
@@ -100,7 +100,7 @@ func TestPollQueue(t *testing.T) {
 
 	q.Conn.Do("DEL", q.Key)
 
-	hasItem, err := q.PollQueue()
+	hasItem, err := q.Peek()
 	if err != nil {
 		t.Error(err.Error())
 	}
@@ -111,7 +111,7 @@ func TestPollQueue(t *testing.T) {
 
 	q.Enqueue("test_item_1")
 
-	hasItem, err = q.PollQueue()
+	hasItem, err = q.Peek()
 	if err != nil {
 		t.Error(err.Error())
 	}

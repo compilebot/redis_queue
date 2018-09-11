@@ -42,7 +42,7 @@ func (q *Queue) Dequeue() (string, error) {
 	return item, nil
 }
 
-func (q *Queue) PollQueue() (bool, error) {
+func (q *Queue) Peek() (bool, error) {
 	length, err := redis.Int(q.Conn.Do("LLEN", q.Key))
 	if err != nil {
 		return false, err
